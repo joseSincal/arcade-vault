@@ -8,16 +8,10 @@ Arcade Vault: plataforma para jugar online y competir por la mayor cantidad de p
 
 El README indica que se trabaja con **Spec Driven Design** (comandos `/spec` y `/spec-impl`), siguiendo las prácticas de https://github.com/Klerith/fernando-skills (instaladas con `npx skills@latest add Klerith/fernando-skills`). Todavía no existe un directorio `spec/` en el repo.
 
-## Comandos
-
-El gestor de paquetes es **pnpm** (`pnpm@12.15.0`).
-
-- `pnpm dev`: servidor de desarrollo (`next dev`)
-- `pnpm build`: build de producción
-- `pnpm start`: sirve el build de producción
-- `pnpm lint`: ESLint (`eslint`, config flat con `eslint-config-next` core-web-vitals + typescript)
-
 No hay framework de tests configurado.
+
+## Skills
+Usa siempre /frontend-desing para diseñar la interfaz del usuario.
 
 ## Next.js no es el que conoces
 
