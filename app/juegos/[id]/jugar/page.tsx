@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { GamePlayer } from "@/components/game-player";
 import { GAMES } from "@/lib/data";
 
@@ -15,7 +16,16 @@ export async function generateMetadata({
   return game ? { title: `Jugando a ${game.title}` } : {};
 }
 
-export default async function PlayPage({ params }: PageProps<"/juegos/[id]/jugar">) {
+// La lectura de `params` va dentro de <Suspense> para que el App Shell no dependa de una URL concreta
+export default function PlayPage({ params }: PageProps<"/juegos/[id]/jugar">) {
+  return (
+    <Suspense fallback={null}>
+      <Player params={params} />
+    </Suspense>
+  );
+}
+
+async function Player({ params }: { params: PageProps<"/juegos/[id]/jugar">["params"] }) {
   const { id } = await params;
   const game = GAMES.find((g) => g.id === id);
   if (!game) notFound();

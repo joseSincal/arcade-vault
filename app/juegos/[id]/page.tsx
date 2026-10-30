@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { GAMES, seededScores } from "@/lib/data";
 
 export function generateStaticParams() {
@@ -13,7 +14,16 @@ export async function generateMetadata({ params }: PageProps<"/juegos/[id]">): P
   return game ? { title: game.title, description: game.short } : {};
 }
 
-export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]">) {
+// La lectura de `params` va dentro de <Suspense> para que el App Shell no dependa de una URL concreta
+export default function GameDetailPage({ params }: PageProps<"/juegos/[id]">) {
+  return (
+    <Suspense fallback={null}>
+      <GameDetail params={params} />
+    </Suspense>
+  );
+}
+
+async function GameDetail({ params }: { params: PageProps<"/juegos/[id]">["params"] }) {
   const { id } = await params;
   const game = GAMES.find((g) => g.id === id);
   if (!game) notFound();
@@ -61,7 +71,7 @@ export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]
           </div>
           <div className="detail-actions">
             <Link href={`/juegos/${game.id}/jugar`} className="btn xl pulse">
-              ▶ JUGAR AHORA
+              ► JUGAR AHORA
             </Link>
             <Link href="/" className="btn ghost lg">
               VOLVER AL VAULT

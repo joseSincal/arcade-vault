@@ -103,7 +103,7 @@ Cada paso deja la app compilando y ejecutable.
 - [ ] Pulsar una tarjeta o su botón JUGAR navega a `/juegos/<id>`.
 - [ ] `/juegos/caida` muestra título, descripción larga, 4 etiquetas, 3 estadísticas y 10 filas de puntuaciones con #01, #02 y #03 en dorado, plata y bronce.
 - [ ] `/juegos/no-existe` muestra la pantalla 404.
-- [ ] "▶ JUGAR AHORA" lleva a `/juegos/<id>/jugar`; "VOLVER AL VAULT" lleva a `/`.
+- [ ] "► JUGAR AHORA" lleva a `/juegos/<id>/jugar`; "VOLVER AL VAULT" lleva a `/`.
 - [ ] En el reproductor, la puntuación sube sola; PAUSA la detiene y muestra "EN PAUSA"; REANUDAR la continúa.
 - [ ] FIN abre el modal "FIN DEL JUEGO" con la puntuación final; "GUARDAR PUNTUACIÓN" muestra "PUNTUACIÓN GUARDADA_" y no escribe en localStorage.
 - [ ] "JUGAR DE NUEVO" reinicia puntuación, vidas y nivel; "VOLVER AL VAULT" lleva a `/`; SALIR lleva a `/juegos/<id>`.
