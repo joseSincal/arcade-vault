@@ -200,6 +200,11 @@ a { color: inherit; text-decoration: none; }
   .av-nav .hamburger { display: inline-flex; }
 }
 
+/* En móvil estrecho el botón no cabe junto al logo y el ≡; "Iniciar Sesión" vive en el panel lateral */
+@media (max-width: 520px) {
+  .av-nav .auth-btn { display: none; }
+}
+
 .av-mobile-panel {
   position: fixed;
   inset: 0 0 0 auto;
