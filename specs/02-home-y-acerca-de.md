@@ -1,6 +1,6 @@
 # SPEC 02 — Home y Acerca de
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01
 > **Fecha:** 2026-11-09
 > **Objetivo:** Portar a Next.js el home (landing) y la página «Acerca de» de `references/templates/home-about/`, moviendo la biblioteca de `/` a `/biblioteca`.
@@ -22,7 +22,8 @@ El diseño visual se toma tal cual del template. Según `CLAUDE.md`, cualquier d
 - Ruta `/` con el home: hero con siluetas flotantes, «¿Por qué Arcade Vault?» (4 tarjetas), «Juegos disponibles ahora» (6 mini-tarjetas), banda de stats (3 bloques), «Actividad en vivo» (últimas puntuaciones y top jugadores de hoy), «Precios» (plan único + 3 preguntas frecuentes) y CTA final.
 - Ruta `/acerca-de` con la misión, 3 destacados, divisor animado y formulario de contacto con validación y terminal de éxito.
 - Mover la biblioteca de `/` a `/biblioteca`, sin cambiar su contenido ni su comportamiento.
-- Actualizar `Nav` (Inicio, Biblioteca, Salón de la Fama, Acerca de), el logo (apunta a `/`) y los enlaces «VOLVER AL VAULT» y de retorno tras auth, que pasan a `/biblioteca`.
+- Actualizar `Nav` (Inicio, Biblioteca, Salón de la Fama, Acerca de), el logo (apunta a `/`) y los enlaces «VOLVER AL VAULT» (modal del reproductor, detalle de juego y `not-found`), «VOLVER A LA BIBLIOTECA» (salón) y de retorno tras auth, que pasan a `/biblioteca`.
+- Ajustar el CSS del nav y del hero para que 4 enlaces y el indicador «DESLIZA» se vean bien (ver paso 9).
 - Animación de aparición al hacer scroll (`.reveal`) mediante un componente cliente.
 - Datos simulados del home tipados en `lib/data.ts`: `RECENT_SCORES`, `TOP_TODAY` y `HOME_STATS`.
 - Portar a `app/globals.css` los estilos del template que aún no existen (`home-*`, `about-*`, `.reveal`, `.mini-*`, `.feature-*`, `.activity-*`, `.pricing-*`, `.contact-*`, `.terminal-*`).
@@ -74,43 +75,47 @@ Convenciones:
 Cada paso deja la app compilando y ejecutable.
 
 1. Leer la guía relevante en `node_modules/next/dist/docs/` (App Router, `cacheComponents`, `Suspense`, `metadata`). Si no existe, ejecutar `pnpm install`.
-2. Mover la biblioteca: crear `app/biblioteca/page.tsx` con el contenido y la `metadata` actuales de `app/page.tsx`. Cambiar a `/biblioteca` los enlaces de retorno en `components/hall-of-fame.tsx`, `components/game-player.tsx` y `components/auth-form.tsx`, y el criterio «activo» de la Biblioteca en `components/nav.tsx`. `/` sigue sirviendo la biblioteca hasta el paso 6.
+2. Mover la biblioteca: crear `app/biblioteca/page.tsx` con el contenido y la `metadata` actuales de `app/page.tsx`. Cambiar a `/biblioteca` los enlaces de retorno en `components/hall-of-fame.tsx`, `components/game-player.tsx`, `components/auth-form.tsx`, `app/juegos/[id]/page.tsx` y `app/not-found.tsx`, y el criterio «activo» de la Biblioteca en `components/nav.tsx`. `/` sigue sirviendo la biblioteca hasta el paso 6.
 3. Añadir en `lib/data.ts` los tipos y constantes `RecentScore`, `TopPlayer`, `HomeStat`, `RECENT_SCORES`, `TOP_TODAY` y `HOME_STATS`. Verificación: `pnpm lint` sin errores.
 4. Portar a `app/globals.css` los bloques de `references/templates/home-about/styles.css` que no existan ya (`home-*`, `about-*`, `.reveal`, `.mini-*`, `.feature-*`, `.activity-*`, `.pricing-*`, `.contact-*`, `.terminal-*`, `.highlight-*`). Reutilizar `.field`, `.fade-in` y `@keyframes` ya presentes. Verificación: la app compila y la biblioteca no cambia de aspecto.
 5. Crear `components/reveal.tsx` (client): envuelve un elemento con clase `reveal` y le añade `in` con `IntersectionObserver` (umbral 0.12, una sola vez). Si el usuario tiene `prefers-reduced-motion: reduce`, añade `in` de inmediato.
 6. Reemplazar `app/page.tsx` por el home: `components/home/floating-silhouettes.tsx` y `components/home/feature-icon.tsx` (server), `components/home/mini-card.tsx` (`Link` a `/juegos/<id>`) y las 6 secciones, con los CTA como `Link` con clase `btn`. Verificación: `/` muestra el home y `/biblioteca` la biblioteca.
 7. Crear `app/acerca-de/page.tsx`, `components/home/highlight-icon.tsx` y `components/contact-form.tsx` (client): campos vacíos → clase `shake` 400 ms sin enviar; campos completos → terminal de éxito con «GRACIAS, {NOMBRE EN MAYÚSCULAS}.» y botón «ENVIAR OTRO MENSAJE» que limpia el formulario.
 8. Actualizar `components/nav.tsx` y su panel móvil: enlaces Inicio (`/`), Biblioteca (`/biblioteca`), Salón de la Fama (`/salon`) y Acerca de (`/acerca-de`); logo a `/`. Inicio solo activo en `/`; Biblioteca activa en `/biblioteca` y `/juegos/*`.
-9. Definir `metadata` de `/` y `/acerca-de` (títulos propios) y revisar el responsive a 390 px y 1280 px.
+9. Definir `metadata` de `/` y `/acerca-de` (títulos propios) y revisar el responsive a 390 px y 1280 px. La revisión con Playwright detectó dos fallos visuales, corregidos en `app/globals.css`:
+   - **Nav:** los enlaces, el contador y «Iniciar Sesión» llevan `white-space: nowrap` (sin él, «Salón de la Fama» y «Acerca de» se partían en dos líneas a 1280 px). El nav necesita ~1131 px en una línea, así que el contador «CRÉDITOS · 03» se oculta por debajo de 1180 px y el menú móvil entra por debajo de 1024 px (antes 840 px).
+   - **Hero:** `padding-bottom` de 120 px y `.hero-scroll` en `bottom: -84px`, para que «DESLIZA» no se solape con los CTA a 1280×800.
 
 ---
 
 ## Criterios de aceptación
 
-- [ ] `pnpm lint` y `pnpm build` terminan sin errores.
-- [ ] `/` muestra, en orden: hero, «¿POR QUÉ ARCADE VAULT?», «JUEGOS DISPONIBLES AHORA», banda de stats, «ACTIVIDAD EN VIVO», «PRECIOS» y «¿LISTO PARA JUGAR?».
-- [ ] El hero muestra «EL ARCADE / CLÁSICO ESTÁ / DE VUELTA», 8 siluetas flotantes decorativas ocultas a lectores de pantalla (`aria-hidden`) y el indicador «DESLIZA».
-- [ ] «EXPLORAR JUEGOS», «VER TODOS LOS JUEGOS →» e «INSERTAR MONEDA →» llevan a `/biblioteca`.
-- [ ] «CREAR CUENTA» y «EMPEZAR GRATIS →» llevan a `/auth`; «VER SALÓN →» lleva a `/salon`.
-- [ ] «¿POR QUÉ ARCADE VAULT?» muestra 4 tarjetas con icono: JUEGOS CLÁSICOS, 100% GRATIS, LADDER BOARDS y SIEMPRE CRECIENDO.
-- [ ] «JUEGOS DISPONIBLES AHORA» muestra 6 mini-tarjetas; pulsar una navega a `/juegos/<id>` de ese juego.
-- [ ] La banda de stats muestra 3 bloques: «12+ JUEGOS», «MILES DE PARTIDAS» y «GLOBAL RANKING».
-- [ ] «ÚLTIMAS PUNTUACIONES» muestra 7 filas; la primera es NEONFOX, Caída, `+184.220`, «hace 2 min».
-- [ ] «TOP JUGADORES · HOY» muestra 5 filas; `#01`, `#02` y `#03` tienen las clases `top1`, `top2` y `top3`; la primera marca `312.840`.
-- [ ] «PRECIOS» muestra la tarjeta «JUGADOR VAULT» con `$0 / SIEMPRE`, 6 ventajas con ✔ y 3 preguntas frecuentes.
-- [ ] Las secciones con `.reveal` quedan ocultas al cargar y reciben la clase `in` al entrar en pantalla; con `prefers-reduced-motion: reduce` todas son visibles desde el inicio.
-- [ ] `/biblioteca` muestra el mismo contenido y comportamiento que tenía `/` en SPEC 01 (8 tarjetas, búsqueda, chips, «NO HAY RESULTADOS»).
-- [ ] «VOLVER AL VAULT» en `/salon` y en el modal del reproductor lleva a `/biblioteca`.
-- [ ] Enviar el formulario de `/auth` o pulsar «JUGAR COMO INVITADO» navega a `/biblioteca`.
-- [ ] `/acerca-de` muestra «ACERCA DE ARCADE VAULT», la misión, 3 destacados, el divisor de 24 píxeles y el formulario con NOMBRE, CORREO ELECTRÓNICO y MENSAJE.
-- [ ] Enviar `/acerca-de` con cualquier campo vacío (o solo espacios) añade la clase `shake` durante 400 ms y no muestra el éxito.
-- [ ] Enviar `/acerca-de` con los 3 campos completos muestra «VAULT-OS // TERMINAL» y «MENSAJE RECIBIDO. TE RESPONDEREMOS PRONTO. GRACIAS, <NOMBRE EN MAYÚSCULAS>.».
-- [ ] «ENVIAR OTRO MENSAJE» vuelve al formulario con los 3 campos vacíos.
-- [ ] El nav muestra Inicio, Biblioteca, Salón de la Fama y Acerca de; el logo navega a `/`.
-- [ ] El enlace activo se resalta así: Inicio en `/`; Biblioteca en `/biblioteca` y `/juegos/*`; Salón en `/salon`; Acerca de en `/acerca-de`.
-- [ ] A 390 px de ancho el panel móvil contiene los mismos 4 enlaces más «Iniciar Sesión», y no hay scroll horizontal en `/` ni en `/acerca-de`.
-- [ ] La consola del navegador no muestra errores de hidratación en `/`, `/acerca-de` y `/biblioteca`.
-- [ ] No se escribe nada en localStorage ni en cookies, y el formulario de contacto no realiza ninguna petición de red.
+- [x] `pnpm build` termina sin errores y `pnpm exec eslint app components lib` no reporta errores. (`pnpm lint` completo sigue fallando por los prototipos `.jsx` de `references/`, que ya fallaban antes de esta spec; no se corrige aquí.)
+- [x] `/` muestra, en orden: hero, «¿POR QUÉ ARCADE VAULT?», «JUEGOS DISPONIBLES AHORA», banda de stats, «ACTIVIDAD EN VIVO», «PRECIOS» y «¿LISTO PARA JUGAR?».
+- [x] El hero muestra «EL ARCADE / CLÁSICO ESTÁ / DE VUELTA», 8 siluetas flotantes decorativas ocultas a lectores de pantalla (`aria-hidden`) y el indicador «DESLIZA».
+- [x] «EXPLORAR JUEGOS», «VER TODOS LOS JUEGOS →» e «INSERTAR MONEDA →» llevan a `/biblioteca`.
+- [x] «CREAR CUENTA» y «EMPEZAR GRATIS →» llevan a `/auth`; «VER SALÓN →» lleva a `/salon`.
+- [x] «¿POR QUÉ ARCADE VAULT?» muestra 4 tarjetas con icono: JUEGOS CLÁSICOS, 100% GRATIS, LADDER BOARDS y SIEMPRE CRECIENDO.
+- [x] «JUEGOS DISPONIBLES AHORA» muestra 6 mini-tarjetas; pulsar una navega a `/juegos/<id>` de ese juego.
+- [x] La banda de stats muestra 3 bloques: «12+ JUEGOS», «MILES DE PARTIDAS» y «GLOBAL RANKING».
+- [x] «ÚLTIMAS PUNTUACIONES» muestra 7 filas; la primera es NEONFOX, Caída, `+184.220`, «hace 2 min».
+- [x] «TOP JUGADORES · HOY» muestra 5 filas; `#01`, `#02` y `#03` tienen las clases `top1`, `top2` y `top3`; la primera marca `312.840`.
+- [x] «PRECIOS» muestra la tarjeta «JUGADOR VAULT» con `$0 / SIEMPRE`, 6 ventajas con ✔ y 3 preguntas frecuentes.
+- [x] Las secciones con `.reveal` quedan ocultas al cargar y reciben la clase `in` al entrar en pantalla; con `prefers-reduced-motion: reduce` todas son visibles desde el inicio.
+- [x] `/biblioteca` muestra el mismo contenido y comportamiento que tenía `/` en SPEC 01 (8 tarjetas, búsqueda, chips, «NO HAY RESULTADOS»).
+- [x] «VOLVER AL VAULT» en el modal del reproductor, en el detalle de un juego y en la página de «JUEGO NO ENCONTRADO», y «VOLVER A LA BIBLIOTECA» en `/salon`, llevan a `/biblioteca`.
+- [x] Enviar el formulario de `/auth` o pulsar «JUGAR COMO INVITADO» navega a `/biblioteca`.
+- [x] `/acerca-de` muestra «ACERCA DE ARCADE VAULT», la misión, 3 destacados, el divisor de 24 píxeles y el formulario con NOMBRE, CORREO ELECTRÓNICO y MENSAJE.
+- [x] Enviar `/acerca-de` con cualquier campo vacío (o solo espacios) añade la clase `shake` durante 400 ms y no muestra el éxito.
+- [x] Enviar `/acerca-de` con los 3 campos completos muestra «VAULT-OS // TERMINAL» y «MENSAJE RECIBIDO. TE RESPONDEREMOS PRONTO. GRACIAS, <NOMBRE EN MAYÚSCULAS>.».
+- [x] «ENVIAR OTRO MENSAJE» vuelve al formulario con los 3 campos vacíos.
+- [x] El nav muestra Inicio, Biblioteca, Salón de la Fama y Acerca de; el logo navega a `/`.
+- [x] El enlace activo se resalta así: Inicio en `/`; Biblioteca en `/biblioteca` y `/juegos/*`; Salón en `/salon`; Acerca de en `/acerca-de`.
+- [x] A 390 px de ancho el panel móvil contiene los mismos 4 enlaces más «Iniciar Sesión», y no hay scroll horizontal en `/` ni en `/acerca-de`.
+- [x] Entre 1025 px y 1440 px los 4 enlaces del nav se muestran en una sola línea, sin scroll horizontal; por debajo de 1025 px el nav pasa al menú móvil.
+- [x] A 1280×800 el indicador «DESLIZA» no se solapa con los botones del hero.
+- [x] La consola del navegador no muestra errores de hidratación en `/`, `/acerca-de` y `/biblioteca`.
+- [x] No se escribe nada en localStorage ni en cookies, y el formulario de contacto no realiza ninguna petición de red.
 
 ---
 
@@ -121,6 +126,7 @@ Cada paso deja la app compilando y ejecutable.
 - **Sí:** mover la biblioteca a `/biblioteca` y que `/` sea el home. Es lo que hace el template y deja el home como puerta de entrada.
 - **No:** dejar la biblioteca en `/` y el home en `/inicio`. Evita tocar rutas, pero el logo y la URL raíz no llevarían a la landing.
 - **Sí:** el retorno tras auth y «VOLVER AL VAULT» van a `/biblioteca`. Se corrige así lo que SPEC 01 fijó en `/`; esta spec reemplaza esos criterios de SPEC 01.
+- **Sí:** también cambiar a `/biblioteca` el «VOLVER AL VAULT» del detalle de juego y el de `not-found`. Aparecieron al buscar `href="/"` y, sin el cambio, llevarían al home en lugar de a la biblioteca.
 - **No:** que auth redirija al home. Quien se registra o entra como invitado ya vio la landing y quiere jugar.
 - **Sí:** datos del home tipados en `lib/data.ts`. Mismo criterio que SPEC 01: se sustituyen por un backend sin tocar la pantalla.
 - **No:** hardcodear las filas de actividad en el componente. Mezcla contenido con maquetación.
@@ -131,6 +137,10 @@ Cada paso deja la app compilando y ejecutable.
 - **Sí:** CTAs como `Link` con clase `btn` en lugar de `<button onClick>`. Habilita prefetch, clic central y accesibilidad nativa.
 - **Sí:** reutilizar las clases CSS del template portadas a `app/globals.css`. No se reescriben los estilos ni se migran a utilidades de Tailwind.
 - **Sí:** respetar `prefers-reduced-motion` en `.reveal`. El template no lo hacía.
+- **Sí:** subir el breakpoint del menú móvil de 840 px a 1024 px y ocultar el contador de créditos por debajo de 1180 px. Con 4 enlaces, el nav no cabe en una línea a anchos intermedios.
+- **No:** dejar que los enlaces del nav se partan en dos líneas. Es lo que hacía el CSS del template con 4 enlaces y se veía roto.
+- **Sí:** título de `/` con `title.absolute` («Inicio · Arcade Vault»), porque el `template` del layout raíz no se aplica a la página de su mismo segmento.
+- **Sí:** validar el lint solo sobre `app components lib`. Los errores de `references/` vienen de los prototipos `.jsx` y no se tocan en esta spec.
 
 ---
 
