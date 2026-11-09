@@ -11,7 +11,7 @@ export function AuthForm() {
   // Solo UI: no hay sesión ni persistencia, así que los campos no necesitan estado
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    router.push("/");
+    router.push("/biblioteca");
   };
 
   return (
@@ -62,7 +62,7 @@ export function AuthForm() {
           type="button"
           className="btn ghost"
           style={{ width: "100%", marginTop: 10 }}
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/biblioteca")}
         >
           JUGAR COMO INVITADO
         </button>

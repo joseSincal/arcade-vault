@@ -8,7 +8,7 @@ export function Nav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const isLibrary = pathname === "/" || pathname.startsWith("/juegos");
+  const isLibrary = pathname === "/biblioteca" || pathname.startsWith("/juegos");
   const isHall = pathname.startsWith("/salon");
   const isAuth = pathname.startsWith("/auth");
 
