@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact-form";
 import { HighlightIcon, type HighlightIconKind } from "@/components/home/highlight-icon";
 import { Reveal } from "@/components/reveal";
@@ -7,6 +8,8 @@ const HIGHLIGHTS: { icon: HighlightIconKind; text: string; color: "magenta" | "c
   { icon: "BROWSER", text: "JUEGOS EN HTML — CORREN EN CUALQUIER NAVEGADOR", color: "cyan" },
   { icon: "PLANT", text: "PROYECTO EN CONSTANTE CRECIMIENTO", color: "green" },
 ];
+
+export const metadata: Metadata = { title: "Acerca de" };
 
 export default function AcercaDePage() {
   return (

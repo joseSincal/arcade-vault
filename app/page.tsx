@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureIcon, type FeatureIconKind } from "@/components/home/feature-icon";
 import { FloatingSilhouettes } from "@/components/home/floating-silhouettes";
@@ -60,6 +61,9 @@ const FAQ = [
     a: "Es un proyecto comunitario. Si te gusta, compártelo. Esa es toda la moneda que aceptamos.",
   },
 ];
+
+// El template del layout raíz no aplica a la página de su mismo segmento
+export const metadata: Metadata = { title: { absolute: "Inicio · Arcade Vault" } };
 
 export default function Home() {
   return (
