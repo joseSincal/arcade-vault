@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
-import { sendContactMessage } from "@/app/acerca-de/actions";
+import type { ContactResult } from "@/lib/contact";
 
 const EMPTY = { name: "", email: "", msg: "", website: "" };
 
@@ -11,7 +11,7 @@ const ERROR_TEXT = {
   send: "> ERROR: NO SE PUDO ENVIAR EL MENSAJE. INTÉNTALO DE NUEVO.",
 } as const;
 
-// El envío es real: la Server Action valida y manda el correo con Resend
+// El envío es real: POST /api/contact valida y manda el correo con Resend
 export function ContactForm() {
   const [form, setForm] = useState(EMPTY);
   const [sent, setSent] = useState<string | null>(null);
@@ -38,11 +38,17 @@ export function ContactForm() {
     setError(null);
     startTransition(async () => {
       try {
-        const result = await sendContactMessage(form);
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
+        // Respuesta no JSON -> res.json() lanza y cae en el catch como error "send"
+        const result: ContactResult = await res.json();
         if (result.ok) {
           setSent(result.name);
         } else {
-          setError(result.error);
+          setError(result.error === "validation" ? "validation" : "send");
         }
       } catch {
         setError("send");
