@@ -1,15 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
+import { sendContactMessage } from "@/app/acerca-de/actions";
 
-const EMPTY = { name: "", email: "", msg: "" };
+const EMPTY = { name: "", email: "", msg: "", website: "" };
 
-// Solo UI: el envío es simulado, no hay API, correo ni persistencia
+const ERROR_TEXT = {
+  validation: "> ERROR: REVISA LOS DATOS (CORREO VÁLIDO, NOMBRE MÁX. 80, MENSAJE MÁX. 2000).",
+  send: "> ERROR: NO SE PUDO ENVIAR EL MENSAJE. INTÉNTALO DE NUEVO.",
+} as const;
+
+// El envío es real: la Server Action valida y manda el correo con Resend
 export function ContactForm() {
   const [form, setForm] = useState(EMPTY);
   const [sent, setSent] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
+  const [error, setError] = useState<keyof typeof ERROR_TEXT | null>(null);
+  const [isPending, startTransition] = useTransition();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -26,11 +34,25 @@ export function ContactForm() {
       timer.current = setTimeout(() => setShake(false), 400);
       return;
     }
-    setSent(form.name.trim());
+    if (isPending) return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await sendContactMessage(form);
+        if (result.ok) {
+          setSent(result.name);
+        } else {
+          setError(result.error);
+        }
+      } catch {
+        setError("send");
+      }
+    });
   };
 
   const reset = () => {
     setSent(null);
+    setError(null);
     setForm(EMPTY);
   };
 
@@ -67,8 +89,30 @@ export function ContactForm() {
               placeholder="Cuéntanos qué tienes en mente…"
             ></textarea>
           </div>
-          <button className="btn xl press" type="submit" style={{ width: "100%" }}>
-            ▶ ENVIAR MENSAJE
+          <div className="hp-field" aria-hidden="true">
+            <label htmlFor="contact-website">NO RELLENAR</label>
+            <input
+              id="contact-website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={form.website}
+              onChange={(e) => setForm({ ...form, website: e.target.value })}
+            />
+          </div>
+          {error && (
+            <div className="contact-error" role="alert">
+              {ERROR_TEXT[error]}
+            </div>
+          )}
+          <button
+            className="btn xl press"
+            type="submit"
+            style={{ width: "100%" }}
+            disabled={isPending}
+          >
+            {isPending ? "▶ ENVIANDO…" : "▶ ENVIAR MENSAJE"}
           </button>
         </>
       ) : (
