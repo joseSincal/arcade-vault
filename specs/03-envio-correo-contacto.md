@@ -1,6 +1,6 @@
 # SPEC 03 — Envío de correo del formulario de contacto
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 02
 > **Fecha:** 2026-11-12
 > **Objetivo:** Hacer que el formulario de contacto de `/acerca-de` envíe un correo real mediante Resend desde una Server Action, con estados de carga y error, honeypot y validación en servidor.
