@@ -18,7 +18,7 @@ export default function NotFound() {
       <p style={{ color: "var(--ink-faint)", marginBottom: 32 }}>
         Esta página no existe o el juego ya no está en el Vault. Vuelve a la biblioteca para elegir otro.
       </p>
-      <Link href="/" className="btn xl">
+      <Link href="/biblioteca" className="btn xl">
         VOLVER AL VAULT
       </Link>
     </div>
